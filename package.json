@@ -1,6 +1,6 @@
 {
     "name": "@flexent/ccm",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Convergent Concurrent Modifications",
     "type": "module",
     "sideEffects": false,
