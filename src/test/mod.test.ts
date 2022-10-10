@@ -1,14 +1,14 @@
 import assert from 'assert';
 
-import { mod } from '../main/index.js';
+import { applyMod } from '../main/index.js';
 
-describe('mod', () => {
+describe('modify', () => {
 
     describe('object', () => {
 
         it('sets top-level non-existent property', () => {
             const data: any = {};
-            mod(data, ['test'], { hello: 'world' });
+            applyMod(data, ['test'], { hello: 'world' });
             assert.deepStrictEqual(data, {
                 test: {
                     hello: 'world'
@@ -18,7 +18,7 @@ describe('mod', () => {
 
         it('overwrites existing top-level property', () => {
             const data: any = { metadata: 123 };
-            mod(data, ['metadata'], { hello: 'world' });
+            applyMod(data, ['metadata'], { hello: 'world' });
             assert.deepStrictEqual(data, {
                 metadata: { hello: 'world' }
             });
@@ -26,7 +26,7 @@ describe('mod', () => {
 
         it('sets child property of existing object', () => {
             const data: any = { metadata: {} };
-            mod(data, ['metadata', 'foo'], { hello: 'world' });
+            applyMod(data, ['metadata', 'foo'], { hello: 'world' });
             assert.deepStrictEqual(data, {
                 metadata: {
                     foo: { hello: 'world' }
@@ -36,7 +36,7 @@ describe('mod', () => {
 
         it('initializes non-existend nested property with {}', () => {
             const data: any = { metadata: {} };
-            mod(data, ['metadata', 'foo{}', 'hello'], 'world');
+            applyMod(data, ['metadata', 'foo{}', 'hello'], 'world');
             assert.deepStrictEqual(data, {
                 metadata: {
                     foo: { hello: 'world' }
@@ -47,7 +47,7 @@ describe('mod', () => {
         it('throws if nested property does not exist and no initializer specified', () => {
             const data: any = { metadata: {} };
             try {
-                mod(data, ['metadata', 'foo', 'hello'], 'world');
+                applyMod(data, ['metadata', 'foo', 'hello'], 'world');
                 throw new Error('UnexpectedSuccess');
             } catch (error: any) {
                 assert.strictEqual(error.name, 'ModTargetNotFoundError');
@@ -60,7 +60,7 @@ describe('mod', () => {
                     n1: { ref: 'String' },
                 },
             };
-            mod(data, ['nodes{}', 'n2'], { ref: 'Object' });
+            applyMod(data, ['nodes{}', 'n2'], { ref: 'Object' });
             assert.deepStrictEqual(data, {
                 nodes: {
                     n1: { ref: 'String' },
@@ -75,7 +75,7 @@ describe('mod', () => {
                     n1: { ref: 'String' },
                 },
             };
-            mod(data, ['nodes{}', 'n1'], undefined);
+            applyMod(data, ['nodes{}', 'n1'], undefined);
             assert.deepStrictEqual(data, {
                 nodes: {}
             });
@@ -87,7 +87,7 @@ describe('mod', () => {
 
         it('pushes to top-level array', () => {
             const data: any = [];
-            mod(data, ['@'], 'foo');
+            applyMod(data, ['@'], 'foo');
             assert.deepStrictEqual(data, ['foo']);
         });
 
@@ -98,7 +98,7 @@ describe('mod', () => {
                     { id: 'b', value: 'bar' },
                 ],
             };
-            mod(data, ['items', '@'], { id: 'c', value: 'baz' });
+            applyMod(data, ['items', '@'], { id: 'c', value: 'baz' });
             assert.deepStrictEqual(data, {
                 items: [
                     { id: 'a', value: 'foo' },
@@ -111,7 +111,7 @@ describe('mod', () => {
         it('throws if push undefined', () => {
             const data: any = { items: [] };
             try {
-                mod(data, ['items', '@'], undefined);
+                applyMod(data, ['items', '@'], undefined);
                 throw new Error('UnexpectedSuccess');
             } catch (error: any) {
                 assert.strictEqual(error.name, 'InvalidModError');
@@ -125,7 +125,7 @@ describe('mod', () => {
                     { id: 'b', value: 'bar' },
                 ],
             };
-            mod(data, ['items', 'id=b'], { id: 'c', value: 'baz' });
+            applyMod(data, ['items', 'id=b'], { id: 'c', value: 'baz' });
             assert.deepStrictEqual(data, {
                 items: [
                     { id: 'a', value: 'foo' },
@@ -142,7 +142,7 @@ describe('mod', () => {
                     { id: 'b', value: 'bar' },
                 ],
             };
-            mod(data, ['items', 'id=b'], undefined);
+            applyMod(data, ['items', 'id=b'], undefined);
             assert.deepStrictEqual(data, {
                 items: [
                     { id: 'a', value: 'foo' },
@@ -157,7 +157,7 @@ describe('mod', () => {
                     { id: 'b', value: 'bar' },
                 ],
             };
-            mod(data, ['items', 'id=b', 'value'], 'qux');
+            applyMod(data, ['items', 'id=b', 'value'], 'qux');
             assert.deepStrictEqual(data, {
                 items: [
                     { id: 'a', value: 'foo' },
@@ -174,7 +174,7 @@ describe('mod', () => {
                 ],
             };
             try {
-                mod(data, ['items', 'id=c', 'value'], 'qux');
+                applyMod(data, ['items', 'id=c', 'value'], 'qux');
                 throw new Error('UnexpectedSuccess');
             } catch (error: any) {
                 assert.strictEqual(error.name, 'ModTargetNotFoundError');
@@ -187,16 +187,16 @@ describe('mod', () => {
 
         it('creates a document from scratch', () => {
             const doc: any = {};
-            mod(doc, ['metadata{}', 'label'], 'Some graph');
-            mod(doc, ['nodes{}', 'n1'], { ref: 'String' });
-            mod(doc, ['nodes{}', 'n2'], { ref: 'Object' });
-            mod(doc, ['nodes{}', 'n1', 'props{}', 'value{}', 'value'], 'Hello');
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', '@'], { id: 'e1' });
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', '@'], { id: 'e2' });
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e1', 'key'], 'foo');
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e1', 'value'], 'hello');
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e2', 'key'], 'bar');
-            mod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e2', 'linkId'], 'n1');
+            applyMod(doc, ['metadata{}', 'label'], 'Some graph');
+            applyMod(doc, ['nodes{}', 'n1'], { ref: 'String' });
+            applyMod(doc, ['nodes{}', 'n2'], { ref: 'Object' });
+            applyMod(doc, ['nodes{}', 'n1', 'props{}', 'value{}', 'value'], 'Hello');
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', '@'], { id: 'e1' });
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', '@'], { id: 'e2' });
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e1', 'key'], 'foo');
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e1', 'value'], 'hello');
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e2', 'key'], 'bar');
+            applyMod(doc, ['nodes{}', 'n2', 'props{}', 'properties{}', 'entries[]', 'id=e2', 'linkId'], 'n1');
             assert.deepStrictEqual(doc, {
                 metadata: {
                     label: 'Some graph'

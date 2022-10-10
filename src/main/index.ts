@@ -1,3 +1,8 @@
+export interface Modification {
+    query: string;
+    value: any;
+}
+
 type QueryToken = {
     key: string;
     predicate: string | undefined;
@@ -14,7 +19,12 @@ export class ModTargetNotFoundError extends Error {
     status = 500;
 }
 
-export function mod(data: any, query: string[], value: any): void {
+export function modify(data: any, mod: Modification) {
+    const { query, value } = mod;
+    applyMod(data, query.trim().split(/ +/g), value);
+}
+
+export function applyMod(data: any, query: string[], value: any): void {
     if (!query.length) {
         throw new InvalidModError('Query must be a non-empty array');
     }
@@ -54,7 +64,7 @@ function modObject(obj: Record<string, any>, query: string[], value: any): void 
             throw new ModTargetNotFoundError(`Target ${curr} does not exist`);
         }
     }
-    return mod(obj[token.key], rest, value);
+    return applyMod(obj[token.key], rest, value);
 }
 
 function modArray(arr: any[], query: string[], value: any): void {
@@ -86,7 +96,7 @@ function modArray(arr: any[], query: string[], value: any): void {
         }
         return;
     }
-    return mod(arr[targetIndex], rest, value);
+    return applyMod(arr[targetIndex], rest, value);
 }
 
 function parseQueryToken(q: string): QueryToken {
