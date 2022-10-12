@@ -19,9 +19,16 @@ export class ModTargetNotFoundError extends Error {
     status = 500;
 }
 
-export function modify(data: any, mod: Modification) {
+export function modify(data: any, mod: Modification, ignoreMissing = true) {
     const { query, value } = mod;
-    applyMod(data, query.trim().split(/ +/g), value);
+    try {
+        applyMod(data, query.trim().split(/ +/g), value);
+    } catch (error) {
+        if (ignoreMissing && error instanceof ModTargetNotFoundError) {
+            return;
+        }
+        throw error;
+    }
 }
 
 export function applyMod(data: any, query: string[], value: any): void {
