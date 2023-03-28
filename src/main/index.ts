@@ -107,7 +107,7 @@ function modArray(arr: any[], query: string[], value: any): void {
 }
 
 function parseQueryToken(q: string): QueryToken {
-    const m = /^([@a-zA-Z0-9_-]+)((=([a-zA-Z0-9_-]+))|(\{\}|\[\]))?$/.exec(q);
+    const m = /^([@a-zA-Z0-9_-]+)((=([a-zA-Z0-9_$-]+))|(\{\}|\[\]))?$/.exec(q);
     if (!m) {
         throw new InvalidModError(`Invalid query: ${q}`);
     }
