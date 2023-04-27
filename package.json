@@ -1,6 +1,6 @@
 {
     "name": "@nodescript/ccm",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Convergent Concurrent Modifications",
     "type": "module",
     "sideEffects": false,
