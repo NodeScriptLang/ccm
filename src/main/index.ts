@@ -51,14 +51,7 @@ function modObject(obj: Record<string, any>, query: string[], value: any): void 
         throw new InvalidModError(`Cannot apply ${curr} to object`);
     }
     if (rest.length === 0) {
-        if (value === undefined) {
-            // Delete
-            delete obj[token.key];
-        } else {
-            // Set
-            obj[token.key] = value;
-        }
-        return;
+        return applyObjectValue(obj, token.key, value);
     }
     // Init target and continue
     if (obj[token.key] == null) {
@@ -72,6 +65,26 @@ function modObject(obj: Record<string, any>, query: string[], value: any): void 
         }
     }
     return applyMod(obj[token.key], rest, value);
+}
+
+function applyObjectValue(obj: Record<string, any>, key: string, value: any) {
+    if (key === '') {
+        // Replace the top-level object with `value`; the value must be an object in this case
+        const isObject = value && typeof value === 'object';
+        if (!isObject) {
+            throw new InvalidModError(`Cannot replace an object with non-object value`);
+        }
+        for (const key of Object.keys(obj)) {
+            delete obj[key];
+        }
+        Object.assign(obj, value);
+    } else if (value === undefined) {
+        // Delete
+        delete obj[key];
+    } else {
+        // Set
+        obj[key] = value;
+    }
 }
 
 function modArray(arr: any[], query: string[], value: any): void {
@@ -107,7 +120,7 @@ function modArray(arr: any[], query: string[], value: any): void {
 }
 
 function parseQueryToken(q: string): QueryToken {
-    const m = /^([@a-zA-Z0-9$_-]+)((=([a-zA-Z0-9_$-]+))|(\{\}|\[\]))?$/.exec(q);
+    const m = /^([@a-zA-Z0-9$_-]*)((=([a-zA-Z0-9_$-]+))|(\{\}|\[\]))?$/.exec(q);
     if (!m) {
         throw new InvalidModError(`Invalid query: ${q}`);
     }

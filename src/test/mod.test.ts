@@ -181,6 +181,15 @@ describe('modify', () => {
             }
         });
 
+        it('replaces top-level document with {} query', () => {
+            const data: any = {
+                foo: 123,
+                bar: 234,
+            };
+            applyMod(data, ['{}'], { hello: 'world' });
+            assert.deepStrictEqual(data, { hello: 'world' });
+        });
+
     });
 
     describe('integration', () => {
