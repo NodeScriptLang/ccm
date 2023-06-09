@@ -166,6 +166,23 @@ describe('modify', () => {
             });
         });
 
+        it('initializes item if not found', () => {
+            const data: any = {
+                items: [
+                    { id: 'a', value: 'foo' },
+                    { id: 'b', value: 'bar' },
+                ],
+            };
+            applyMod(data, ['items', 'id=c{}', 'value'], 'qux');
+            assert.deepStrictEqual(data, {
+                items: [
+                    { id: 'a', value: 'foo' },
+                    { id: 'b', value: 'bar' },
+                    { id: 'c', value: 'qux' },
+                ],
+            });
+        });
+
         it('throws if item not found', () => {
             const data: any = {
                 items: [

@@ -102,11 +102,17 @@ function modArray(arr: any[], query: string[], value: any): void {
     if (token.predicate == null) {
         throw new InvalidModError(`Cannot apply ${curr} to array`);
     }
-    const targetIndex = arr.findIndex(_ => _[token.key] === token.predicate);
+    let targetIndex = arr.findIndex(_ => _[token.key] === token.predicate);
     if (targetIndex === -1) {
-        throw new ModTargetNotFoundError(`Target ${curr} does not exist`);
-    }
-    if (rest.length === 0) {
+        if (token.init === 'object') {
+            arr.push({
+                [token.key]: token.predicate,
+            });
+            targetIndex = arr.length - 1;
+        } else {
+            throw new ModTargetNotFoundError(`Target ${curr} does not exist`);
+        }
+    } if (rest.length === 0) {
         if (value === undefined) {
             // Remove At
             arr.splice(targetIndex, 1);
@@ -120,12 +126,12 @@ function modArray(arr: any[], query: string[], value: any): void {
 }
 
 function parseQueryToken(q: string): QueryToken {
-    const m = /^([@a-zA-Z0-9$_-]*)((=([a-zA-Z0-9_$-]+))|(\{\}|\[\]))?$/.exec(q);
+    const m = /^([@a-zA-Z0-9$_-]*)(=([a-zA-Z0-9_$-]+))?(\{\}|\[\])?$/.exec(q);
     if (!m) {
         throw new InvalidModError(`Invalid query: ${q}`);
     }
     const key = m[1];
-    const predicate = m[4] || undefined;
-    const init = m[5] === '{}' ? 'object' : m[5] === '[]' ? 'array' : undefined;
+    const predicate = m[3] || undefined;
+    const init = m[4] === '{}' ? 'object' : m[4] === '[]' ? 'array' : undefined;
     return { key, predicate, init };
 }
